@@ -1,0 +1,21 @@
+name: remote_flutter_host
+description: Flutter host that renders Remote Flutter Widgets served by RemoteFlutterSharp.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  rfw: ^1.0.31
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
