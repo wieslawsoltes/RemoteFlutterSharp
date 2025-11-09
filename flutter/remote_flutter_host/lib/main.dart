@@ -47,6 +47,10 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
       FullyQualifiedWidgetName(_remoteLibrary, 'root');
   static const FullyQualifiedWidgetName _productDetail =
       FullyQualifiedWidgetName(_remoteLibrary, 'ProductDetailScreen');
+  static const FullyQualifiedWidgetName _cartRoot =
+      FullyQualifiedWidgetName(_remoteLibrary, 'CartScreen');
+  static const FullyQualifiedWidgetName _managerRoot =
+      FullyQualifiedWidgetName(_remoteLibrary, 'ProductManagerScreen');
 
   final Runtime _runtime = Runtime();
   final DynamicContent _content = DynamicContent();
@@ -256,10 +260,10 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
     await _handleRemoteEvent(name, arguments, response);
   }
 
-  Future<void> _handleRemoteEvent(
-      String name, DynamicMap arguments, Map<String, dynamic>? response) async {
-    switch (name) {
-      case 'catalog.select':
+    Future<void> _handleRemoteEvent(
+        String name, DynamicMap arguments, Map<String, dynamic>? response) async {
+      switch (name) {
+        case 'catalog.select':
         final int? productId = _extractProductId(arguments);
         if (productId == null) {
           debugPrint(
@@ -285,6 +289,29 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
           _error = null;
         });
         break;
+      case 'catalog.manage':
+        setState(() {
+          _rootWidget = _managerRoot;
+          _loading = false;
+          _error = null;
+        });
+        break;
+      case 'catalog.cart':
+        setState(() {
+          _rootWidget = _cartRoot;
+          _loading = false;
+          _error = null;
+        });
+        break;
+      case 'catalog.interest':
+        _showFeedback(response?['message']?.toString() ?? 'Interest recorded on the server.');
+        break;
+      case 'catalog.create':
+      case 'catalog.update':
+      case 'catalog.delete':
+        _applyResponseData(response);
+        _showFeedback(response?['message']?.toString() ?? 'Catalog content updated.');
+        break;
       case 'catalog.buy':
         final dynamic nameValue = arguments['name'];
         final String fallbackName =
@@ -295,15 +322,35 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
             (response != null && response['product'] is String)
                 ? (response['product'] as String)
                 : fallbackName;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added $productName to cart')),
-          );
-        }
+        _showFeedback('Added $productName to cart');
         break;
       default:
         break;
     }
+  }
+
+  void _applyResponseData(Map<String, dynamic>? response) {
+    if (response == null) {
+      return;
+    }
+    final dynamic data = response['data'];
+    if (data is Map<String, dynamic>) {
+      for (final entry in data.entries) {
+        final value = entry.value;
+        if (value is Map<String, dynamic>) {
+          _content.update(entry.key, _convertMap(value));
+        }
+      }
+    }
+  }
+
+  void _showFeedback(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -359,13 +406,21 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
     }
 
     return Scaffold(
-      body: RemoteWidget(
-        runtime: _runtime,
-        data: _content,
-        widget: root,
-        onEvent: (String name, DynamicMap arguments) {
-          unawaited(_dispatchRemoteEvent(name, arguments));
-        },
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: KeyedSubtree(
+          key: ValueKey(root),
+          child: RemoteWidget(
+            runtime: _runtime,
+            data: _content,
+            widget: root,
+            onEvent: (String name, DynamicMap arguments) {
+              unawaited(_dispatchRemoteEvent(name, arguments));
+            },
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _refreshRemoteUi,

@@ -15,7 +15,7 @@ public sealed class RemoteWidgetLibraryBuilderTests
                 "root",
                 Widget(
                     "Text",
-                    ("text", List(Item(String("Hello, Remote Flutter"))))
+                    args => args.Argument("text", List("Hello, Remote Flutter"))
                 ))
             .Build();
 

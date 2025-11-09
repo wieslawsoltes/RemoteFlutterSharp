@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using RemoteFlutterSharp.RemoteUi;
@@ -80,10 +81,25 @@ app.MapPost("/api/rfw/event", ([FromBody] RemoteUiEvent payload, ILogger<Program
         return string.Empty;
     }
 
+    string ResolveStringValue(string key, string fallback)
+    {
+        if (payload.Arguments.TryGetValue(key, out var element) && element.ValueKind == JsonValueKind.String)
+        {
+            return element.GetString() ?? fallback;
+        }
+
+        return fallback;
+    }
+
     return payload.Name switch
     {
         "catalog.select" => HandleSelect(),
         "catalog.back" => Results.Ok(new { status = "catalog" }),
+        "catalog.manage" => Results.Ok(new { status = "manager" }),
+        "catalog.interest" => HandleInterest(),
+        "catalog.create" => HandleCreate(),
+        "catalog.update" => HandleUpdate(),
+        "catalog.delete" => HandleDelete(),
         "catalog.buy" => Results.Ok(new { status = "added", product = ResolveProductName() }),
         _ => Results.Accepted()
     };
@@ -99,6 +115,80 @@ app.MapPost("/api/rfw/event", ([FromBody] RemoteUiEvent payload, ILogger<Program
         return CatalogData.TryGetProductDetail(id, out var detail)
             ? Results.Ok(detail)
             : Results.NotFound(new { error = "Product not found." });
+    }
+
+    IResult HandleInterest()
+    {
+        var productId = ResolveProductId();
+        var notifier = ResolveStringValue("notifier", "Remote UI");
+        var message = ResolveStringValue("message", "Interest logged from the Flutter host.");
+        var interest = CatalogData.RecordInterest(productId > 0 ? productId : null, notifier, message);
+        logger.LogInformation("Interest recorded: {InterestMessage}", interest.Message);
+        return Results.Ok(new { message = interest.Message, total = interest.TotalInterests });
+    }
+
+    IResult HandleCreate()
+    {
+        var name = ResolveStringValue("name", "Modern Reflection");
+        var category = ResolveStringValue("category", "Studio");
+        var priceText = ResolveStringValue("priceText", "$549");
+        var ratingText = ResolveStringValue("ratingText", "4.7");
+        var description = ResolveStringValue("description", "New inspired piece added from the Flutter host.");
+        var highlights = new[]
+        {
+            ResolveStringValue("highlight1", "Responsive craftsmanship"),
+            ResolveStringValue("highlight2", "Harmonized palette"),
+            "Limited drop"
+        };
+        var specifications = new[]
+        {
+            new CatalogData.Specification("Added", DateTimeOffset.UtcNow.ToString("HH:mm", CultureInfo.InvariantCulture))
+        };
+        var record = CatalogData.AddProduct(
+            name,
+            category,
+            priceText,
+            ratingText,
+            description,
+            highlights,
+            specifications);
+        var payload = CatalogData.BuildDataPayload();
+        return Results.Ok(new { message = $"Created {record.Name}.", data = payload });
+    }
+
+    IResult HandleUpdate()
+    {
+        var productId = ResolveProductId();
+        if (productId <= 0)
+        {
+            return Results.BadRequest(new { error = "Missing product identifier." });
+        }
+
+        var tag = ResolveStringValue("tag", "refreshed");
+        if (!CatalogData.AppendCategoryTag(productId, tag))
+        {
+            return Results.NotFound(new { error = "Product not available." });
+        }
+
+        var payload = CatalogData.BuildDataPayload();
+        return Results.Ok(new { message = $"Updated category for #{productId}.", data = payload });
+    }
+
+    IResult HandleDelete()
+    {
+        var productId = ResolveProductId();
+        if (productId <= 0)
+        {
+            return Results.BadRequest(new { error = "Missing product identifier." });
+        }
+
+        if (!CatalogData.RemoveProduct(productId))
+        {
+            return Results.NotFound(new { error = "Product not available." });
+        }
+
+        var payload = CatalogData.BuildDataPayload();
+        return Results.Ok(new { message = $"Deleted #{productId}.", data = payload });
     }
 });
 

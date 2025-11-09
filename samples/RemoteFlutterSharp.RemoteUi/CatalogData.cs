@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using RemoteFlutterSharp.Dynamic;
@@ -7,8 +9,8 @@ namespace RemoteFlutterSharp.RemoteUi;
 
 public static class CatalogData
 {
-    private static readonly IReadOnlyList<ProductRecord> Products =
-    [
+private static readonly List<ProductRecord> Products = new()
+{
         new ProductRecord(
             Id: 1,
             Name: "Linden Desk",
@@ -87,24 +89,172 @@ public static class CatalogData
                 new Specification("Depósito", "2.5 L"),
                 new Specification("Peso", "18 kg"),
             }),
-    ];
+    };
+
+private static readonly List<CartItemRecord> CartItems = new()
+    {
+        new CartItemRecord(
+            Id: Products[0].Id,
+            Name: Products[0].Name,
+            UnitPrice: 799m,
+            Quantity: 1,
+            Status: "Ready for final QC",
+            Details: "Oak finish · Artisanal joinery",
+            AccentColor: 0xFF81C784,
+            BadgeRotation: 0.08),
+        new CartItemRecord(
+            Id: Products[1].Id,
+            Name: Products[1].Name,
+            UnitPrice: 389m,
+            Quantity: 2,
+            Status: "Awaiting courier pickup",
+            Details: "Memory lumbar · Mesh weave",
+            AccentColor: 0xFF64B5F6,
+            BadgeRotation: 0.14),
+        new CartItemRecord(
+            Id: Products[3].Id,
+            Name: Products[3].Name,
+            UnitPrice: 1199m,
+            Quantity: 1,
+            Status: "PID precision preheated",
+            Details: "Double boiler · Matte steel",
+            AccentColor: 0xFFFFB74D,
+            BadgeRotation: 0.05),
+    };
+
+    private static readonly List<InterestRecord> InterestLog = new();
 
     public static string CreateCatalogJson()
     {
-        var builder = new DynamicContentBuilder()
-            .Set("catalog", new Dictionary<string, object>
-            {
-                ["items"] = Products.Select(product => new Dictionary<string, object>
-                {
-                    ["id"] = product.Id,
-                    ["name"] = product.Name,
-                    ["priceText"] = product.PriceText,
-                    ["ratingText"] = product.RatingText,
-                    ["category"] = product.Category,
-                }).ToArray(),
-            });
-
+        var builder = new DynamicContentBuilder();
+        foreach (var entry in BuildDataPayload())
+        {
+            builder.Set(entry.Key, entry.Value);
+        }
         return builder.ToJsonString();
+    }
+
+    private static Dictionary<string, object> BuildCartPayload()
+    {
+        var total = CartItems.Sum(item => item.UnitPrice * item.Quantity);
+        var savings = total * 0.05m;
+
+        return new Dictionary<string, object>
+        {
+            ["items"] = CartItems.Select(item => new Dictionary<string, object>
+            {
+                ["id"] = item.Id,
+                ["name"] = item.Name,
+                ["status"] = item.Status,
+                ["details"] = item.Details,
+                ["accentColor"] = item.AccentColor,
+                ["badgeRotation"] = item.BadgeRotation,
+                ["quantityText"] = item.QuantityText,
+                ["lineTotalText"] = item.LineTotalText,
+            }).ToArray(),
+            ["totalText"] = FormatCurrency(total),
+            ["savingsText"] = $"{FormatCurrency(savings)} saved",
+            ["statusText"] = "Packed & ready for dispatch",
+            ["promoText"] = "Free delivery on orders over $1,500",
+        };
+    }
+
+    private static Dictionary<string, object> BuildCatalogDictionary()
+    {
+        return new Dictionary<string, object>
+        {
+            ["items"] = Products.Select(product => new Dictionary<string, object>
+            {
+                ["id"] = product.Id,
+                ["name"] = product.Name,
+                ["priceText"] = product.PriceText,
+                ["ratingText"] = product.RatingText,
+                ["category"] = product.Category,
+            }).ToArray(),
+        };
+    }
+
+    public static Dictionary<string, object> BuildDataPayload()
+    {
+        return new Dictionary<string, object>
+        {
+            ["catalog"] = BuildCatalogDictionary(),
+            ["cart"] = BuildCartPayload(),
+        };
+    }
+
+    public static ProductRecord AddProduct(
+        string name,
+        string category,
+        string priceText,
+        string ratingText,
+        string description,
+        IReadOnlyList<string> highlights,
+        IReadOnlyList<Specification> specifications)
+    {
+        var nextId = Products.Count == 0 ? 1 : Products.Max(product => product.Id) + 1;
+        var record = new ProductRecord(
+            Id: nextId,
+            Name: name,
+            Category: category,
+            PriceText: priceText,
+            RatingText: ratingText,
+            Highlights: highlights,
+            Description: description,
+            Specifications: specifications);
+        Products.Add(record);
+        return record;
+    }
+
+    public static bool AppendCategoryTag(int id, string tag)
+    {
+        var index = Products.FindIndex(product => product.Id == id);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        var normalizedTag = tag.Trim();
+        if (normalizedTag.Length == 0)
+        {
+            return true;
+        }
+
+        var product = Products[index];
+        var trimmedCategory = product.Category.Trim();
+        var alreadyHasTag = trimmedCategory.Contains(normalizedTag, StringComparison.OrdinalIgnoreCase);
+        if (alreadyHasTag)
+        {
+            return true;
+        }
+
+        var updatedCategory = $"{trimmedCategory} · {normalizedTag}";
+        Products[index] = product with { Category = updatedCategory };
+        return true;
+    }
+
+    public static bool RemoveProduct(int id)
+    {
+        var index = Products.FindIndex(product => product.Id == id);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        Products.RemoveAt(index);
+        return true;
+    }
+
+    public static InterestResult RecordInterest(int? productId, string notifier, string note)
+    {
+        var productName = productId.HasValue
+            ? Products.FirstOrDefault(product => product.Id == productId.Value)?.Name ?? $"#{productId}"
+            : "Catalog";
+        var record = new InterestRecord(productId, productName, notifier, note, DateTimeOffset.UtcNow);
+        InterestLog.Add(record);
+        return new InterestResult(
+            Message: $"{record.ProductName} interest logged by {record.Notifier}: {record.Note}",
+            TotalInterests: InterestLog.Count);
     }
 
     public static bool TryGetProductDetail(int id, out Dictionary<string, object> detail)
@@ -135,7 +285,9 @@ public static class CatalogData
         return true;
     }
 
-    private sealed record ProductRecord(
+    private static string FormatCurrency(decimal amount) => $"${amount:N0}";
+
+    public sealed record ProductRecord(
         int Id,
         string Name,
         string Category,
@@ -145,5 +297,29 @@ public static class CatalogData
         string Description,
         IReadOnlyList<Specification> Specifications);
 
-    private sealed record Specification(string Label, string Value);
+    public sealed record Specification(string Label, string Value);
+
+    private sealed record CartItemRecord(
+        int Id,
+        string Name,
+        decimal UnitPrice,
+        int Quantity,
+        string Status,
+        string Details,
+        uint AccentColor,
+        double BadgeRotation)
+    {
+        public string QuantityText => Quantity == 1 ? "1 unit" : $"{Quantity} units";
+
+        public string LineTotalText => FormatCurrency(UnitPrice * Quantity);
+    }
+
+    public sealed record InterestResult(string Message, int TotalInterests);
+
+    private sealed record InterestRecord(
+        int? ProductId,
+        string ProductName,
+        string Notifier,
+        string Note,
+        DateTimeOffset Timestamp);
 }

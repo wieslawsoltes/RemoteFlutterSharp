@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using RemoteFlutterSharp.Rfw.Expressions;
 
@@ -19,37 +21,84 @@ public static class RfwDsl
 
     public static RfwExpression Reference(params string[] segments) => new RfwReferenceExpression(segments);
 
-    public static RfwExpression Widget(string name, params (string Argument, RfwExpression Value)[] arguments)
+    public static RfwExpression Widget(string name, params RfwArgument[] arguments)
     {
+        ArgumentNullException.ThrowIfNull(arguments);
         var dict = new Dictionary<string, RfwExpression>(arguments.Length, StringComparer.Ordinal);
-        foreach (var (argument, value) in arguments)
+        foreach (var argument in arguments)
         {
-            dict[argument] = value;
+            dict[argument.Name] = argument.Value.Expression;
         }
 
         return new RfwWidgetExpression(name, dict);
     }
 
-    public static RfwExpression Map(params (string Key, RfwExpression Value)[] entries)
+    public static RfwExpression Widget(string name, Action<RfwArgumentBuilder>? configure)
     {
+        var builder = new RfwArgumentBuilder();
+        configure?.Invoke(builder);
+        return new RfwWidgetExpression(name, builder.Build());
+    }
+
+    public static RfwExpression Map(params RfwArgument[] entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
         var dict = new Dictionary<string, RfwExpression>(entries.Length, StringComparer.Ordinal);
-        foreach (var (key, value) in entries)
+        foreach (var entry in entries)
         {
-            dict[key] = value;
+            dict[entry.Name] = entry.Value.Expression;
         }
 
         return new RfwMapExpression(dict);
     }
 
-    public static RfwExpression Event(string eventName, params (string Key, RfwExpression Value)[] arguments)
+    public static RfwExpression Map(Action<RfwArgumentBuilder> configure)
     {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new RfwArgumentBuilder();
+        configure(builder);
+        return new RfwMapExpression(builder.Build());
+    }
+
+    public static RfwExpression Event(string eventName, params RfwArgument[] arguments)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
         var payload = Map(arguments);
         return new RfwEventExpression(eventName, payload);
     }
 
-    public static RfwExpression List(params RfwListItem[] items) => new RfwListExpression(items);
+    public static RfwExpression Event(string eventName, Action<RfwArgumentBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new RfwArgumentBuilder();
+        configure(builder);
+        var entries = builder.Build();
+        return new RfwEventExpression(eventName, new RfwMapExpression(entries));
+    }
+
+    public static RfwExpression List(params RfwListItem[] items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        return new RfwListExpression(items);
+    }
+
+    public static RfwExpression List(params RfwValue[] values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        var items = new RfwListItem[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            items[index] = Item(values[index]);
+        }
+
+        return new RfwListExpression(items);
+    }
 
     public static RfwListItem Item(RfwExpression expression) => new RfwExpressionListItem(expression);
+
+    public static RfwListItem Item(RfwValue value) => Item(value.Expression);
 
     public static RfwListItem For(string variable, RfwExpression iterable, RfwExpression body) => new RfwForListItem(variable, iterable, body);
 }

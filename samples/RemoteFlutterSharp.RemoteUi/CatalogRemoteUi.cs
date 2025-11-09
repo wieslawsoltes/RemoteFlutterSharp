@@ -1,4 +1,6 @@
+using System;
 using RemoteFlutterSharp.Rfw;
+using RemoteFlutterSharp.Rfw.Expressions;
 
 using static RemoteFlutterSharp.Rfw.RfwDsl;
 
@@ -19,310 +21,22 @@ public static class CatalogRemoteUi
 
         builder.DefineWidget(
             "CatalogScreen",
-            Widget(
-                "Scaffold",
-                ("backgroundColor", HexColor(0xFFF5F5F5)),
-                ("appBar", Widget(
-                    "AppBar",
-                    ("title", Widget(
-                        "Text",
-                        ("text", List(Item(String("Remote Catalog")))),
-                        ("textDirection", String("ltr"))
-                    ))
-                )),
-                ("body", Widget(
-                    "Padding",
-                    ("padding", List(
-                        Item(Double(16)),
-                        Item(Double(16)),
-                        Item(Double(16)),
-                        Item(Double(16))
-                    )),
-                    ("child", Widget(
-                        "ListView",
-                        ("children", List(
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(8)),
-                                    Item(Double(4)),
-                                    Item(Double(12)),
-                                    Item(Double(12))
-                                )),
-                                ("child", Widget(
-                                    "Text",
-                                    ("text", List(Item(String("Today")))),
-                                    ("style", Map(
-                                        ("fontSize", Double(20)),
-                                        ("fontWeight", String("w600"))
-                                    )),
-                                    ("textDirection", String("ltr"))
-                                ))
-                            )),
-                            For(
-                                "product",
-                                Reference("data", "catalog", "items"),
-                                Widget(
-                                    "ProductCard",
-                                    ("product", Reference("product"))
-                                )
-                            )
-                        ))
-                    ))
-                ))
-            ),
+            BuildCatalogScreen(),
             "The primary scaffold layout containing the catalog list.");
 
         builder.DefineWidget(
             "ProductCard",
-            Widget(
-                "Card",
-                ("child", Widget(
-                    "ListTile",
-                    ("title", Widget(
-                        "Text",
-                        ("text", List(Item(Reference("args", "product", "name")))),
-                        ("style", Map(("fontSize", Double(18)))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("subtitle", Widget(
-                        "Text",
-                        ("text", List(
-                            Item(String("Rating ")),
-                            Item(Reference("args", "product", "ratingText")),
-                            Item(String(" • ")),
-                            Item(Reference("args", "product", "category"))
-                        )),
-                        ("style", Map(("color", HexColor(0xFF666666)))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("trailing", Widget(
-                        "Text",
-                        ("text", List(Item(Reference("args", "product", "priceText")))),
-                        ("style", Map(("fontWeight", String("w600")))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("onTap", Event(
-                        "catalog.select",
-                        ("id", Reference("args", "product", "id")),
-                        ("name", Reference("args", "product", "name"))
-                    ))
-                ))
-            ),
+            BuildProductCard(),
             "Reusable tile that emits selection events back to the host.");
 
         builder.DefineWidget(
             "ProductDetailScreen",
-            Widget(
-                "Scaffold",
-                ("appBar", Widget(
-                    "AppBar",
-                    ("leading", Widget(
-                        "GestureDetector",
-                        ("onTap", Event("catalog.back")),
-                        ("child", Widget(
-                            "Padding",
-                            ("padding", List(
-                                Item(Double(8)),
-                                Item(Double(8)),
-                                Item(Double(8)),
-                                Item(Double(8))
-                            )),
-                            ("child", Widget(
-                                "Icon",
-                                ("codePoint", Int(0xE5C4)),
-                                ("fontFamily", String("MaterialIcons"))
-                            ))
-                        ))
-                    )),
-                    ("title", Widget(
-                        "Text",
-                        ("text", List(Item(Reference("data", "detail", "name")))),
-                        ("style", Map(("fontSize", Double(18)))),
-                        ("textDirection", String("ltr"))
-                    ))
-                )),
-                ("body", Widget(
-                    "Padding",
-                    ("padding", List(
-                        Item(Double(20)),
-                        Item(Double(12)),
-                        Item(Double(20)),
-                        Item(Double(12))
-                    )),
-                    ("child", Widget(
-                        "ListView",
-                        ("children", List(
-                            Item(Widget(
-                                "Text",
-                                ("text", List(Item(Reference("data", "detail", "category")))),
-                                ("style", Map(
-                                    ("fontSize", Double(14)),
-                                    ("color", HexColor(0xFF7A7A7A))
-                                )),
-                                ("textDirection", String("ltr"))
-                            )),
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(12)),
-                                    Item(Double(0)),
-                                    Item(Double(12)),
-                                    Item(Double(16))
-                                )),
-                                ("child", Widget(
-                                    "Text",
-                                    ("text", List(Item(Reference("data", "detail", "description")))),
-                                    ("style", Map(
-                                        ("fontSize", Double(16)),
-                                        ("height", Double(1.4))
-                                    )),
-                                    ("textDirection", String("ltr"))
-                                ))
-                            )),
-                            Item(Widget(
-                                "Card",
-                                ("child", Widget(
-                                    "ListTile",
-                                    ("title", Widget(
-                                        "Text",
-                                        ("text", List(Item(String("Price")))),
-                                        ("style", Map(("fontWeight", String("w600")))),
-                                        ("textDirection", String("ltr"))
-                                    )),
-                                    ("subtitle", Widget(
-                                        "Text",
-                                        ("text", List(Item(Reference("data", "detail", "priceText")))),
-                                        ("style", Map(("fontSize", Double(18)))),
-                                        ("textDirection", String("ltr"))
-                                    )),
-                                    ("trailing", Widget(
-                                        "Card",
-                                        ("color", HexColor(0xFFE1F5FE)),
-                                        ("child", Widget(
-                                            "Padding",
-                                            ("padding", List(
-                                                Item(Double(8)),
-                                                Item(Double(4)),
-                                                Item(Double(8)),
-                                                Item(Double(4))
-                                            )),
-                                            ("child", Widget(
-                                                "Text",
-                                                ("text", List(Item(Reference("data", "detail", "ratingText")))),
-                                                ("textDirection", String("ltr"))
-                                            ))
-                                        ))
-                                    ))
-                                ))
-                            )),
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(16)),
-                                    Item(Double(8)),
-                                    Item(Double(8)),
-                                    Item(Double(4))
-                                )),
-                                ("child", Widget(
-                                    "Text",
-                                    ("text", List(Item(String("Highlights")))),
-                                    ("style", Map(
-                                        ("fontSize", Double(16)),
-                                        ("fontWeight", String("w600"))
-                                    )),
-                                    ("textDirection", String("ltr"))
-                                ))
-                            )),
-                            For(
-                                "highlight",
-                                Reference("data", "detail", "highlights"),
-                                Widget(
-                                    "ListTile",
-                                    ("leading", Widget(
-                                        "Icon",
-                                        ("codePoint", Int(0xE86C)),
-                                        ("fontFamily", String("MaterialIcons")),
-                                        ("color", HexColor(0xFF558B2F))
-                                    )),
-                                    ("title", Widget(
-                                        "Text",
-                                        ("text", List(Item(Reference("highlight")))),
-                                        ("textDirection", String("ltr"))
-                                    ))
-                                )
-                            ),
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(16)),
-                                    Item(Double(16)),
-                                    Item(Double(8)),
-                                    Item(Double(4))
-                                )),
-                                ("child", Widget(
-                                    "Text",
-                                    ("text", List(Item(String("Specifications")))),
-                                    ("style", Map(
-                                        ("fontSize", Double(16)),
-                                        ("fontWeight", String("w600"))
-                                    )),
-                                    ("textDirection", String("ltr"))
-                                ))
-                            )),
-                            For(
-                                "spec",
-                                Reference("data", "detail", "specifications"),
-                                Widget(
-                                    "SpecificationRow",
-                                    ("spec", Reference("spec"))
-                                )
-                            ),
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(16)),
-                                    Item(Double(24)),
-                                    Item(Double(16)),
-                                    Item(Double(36))
-                                )),
-                                ("child", Widget(
-                                    "ElevatedButton",
-                                    ("onPressed", Event(
-                                        "catalog.buy",
-                                        ("id", Reference("data", "detail", "id")),
-                                        ("name", Reference("data", "detail", "name"))
-                                    )),
-                                    ("child", Widget(
-                                        "Text",
-                                        ("text", List(Item(String("Add to Cart")))),
-                                        ("textDirection", String("ltr"))
-                                    ))
-                                ))
-                            ))
-                        ))
-                    ))
-                ))
-            ),
+            BuildProductDetailScreen(),
             "Detailed product layout with highlights and specifications.");
 
         builder.DefineWidget(
             "SpecificationRow",
-            Widget(
-                "ListTile",
-                ("title", Widget(
-                    "Text",
-                    ("text", List(Item(Reference("args", "spec", "label")))),
-                    ("style", Map(("fontWeight", String("w500")))),
-                    ("textDirection", String("ltr"))
-                )),
-                ("trailing", Widget(
-                    "Text",
-                    ("text", List(Item(Reference("args", "spec", "value")))),
-                    ("style", Map(("color", HexColor(0xFF424242)))),
-                    ("textDirection", String("ltr"))
-                ))
-            ),
+            BuildSpecificationRow(),
             "Row displaying a specification label/value pair.");
 
         return builder.Build();
@@ -332,4 +46,132 @@ public static class CatalogRemoteUi
 
     public static string CreateDataJson()
         => CatalogData.CreateCatalogJson();
+
+    private static RfwExpression BuildCatalogScreen() =>
+        Widget("Scaffold", args => args
+            .Argument("backgroundColor", HexColor(0xFFF5F5F5))
+            .Argument("appBar", Widget("AppBar", appBar => appBar
+                .Argument("title", LtrText(List("Remote Catalog")))))
+            .Argument("body", Padding(Widget("ListView", list => list
+                .Argument("children", List(
+                    Item(Padding(
+                        LtrText(List("Today"), text => text.Argument("style", Map(m => m
+                            .Argument("fontSize", 20)
+                            .Argument("fontWeight", "w600")))),
+                        8,
+                        4,
+                        12,
+                        12)),
+                    For(
+                        "product",
+                        Reference("data", "catalog", "items"),
+                        Widget("ProductCard", card => card.Argument("product", Reference("product")))
+                    )
+                ))), 16, 16, 16, 16))
+        );
+
+    private static RfwExpression BuildProductCard() =>
+        Widget("Card", card => card.Argument("child", Widget("ListTile", tile => tile
+            .Argument("title", LtrText(List(Reference("args", "product", "name")), text => text.Argument("style", Map(m => m.Argument("fontSize", 18)))))
+            .Argument("subtitle", LtrText(
+                List(
+                    "Rating ",
+                    Reference("args", "product", "ratingText"),
+                    " • ",
+                    Reference("args", "product", "category")),
+                text => text.Argument("style", Map(m => m.Argument("color", HexColor(0xFF666666))))))
+            .Argument("trailing", LtrText(List(Reference("args", "product", "priceText")), text => text.Argument("style", Map(m => m.Argument("fontWeight", "w600")))))
+            .Argument("onTap", Event("catalog.select", args => args
+                .Argument("id", Reference("args", "product", "id"))
+                .Argument("name", Reference("args", "product", "name"))))
+        )));
+
+    private static RfwExpression BuildProductDetailScreen()
+    {
+        static RfwExpression BuildAppBar() =>
+            Widget("AppBar", bar => bar
+                .Argument("leading", Widget("GestureDetector", detector => detector
+                    .Argument("onTap", Event("catalog.back"))
+                    .Argument("child", Padding(Widget("Icon", icon => icon
+                        .Argument("codePoint", 0xE5C4)
+                        .Argument("fontFamily", "MaterialIcons")), 8, 8, 8, 8))))
+                .Argument("title", LtrText(List(Reference("data", "detail", "name")), title => title.Argument("style", Map(m => m.Argument("fontSize", 18))))));
+
+        static RfwExpression BuildBody()
+        {
+        static RfwExpression PriceTile()
+        {
+            var ratingBadge = Padding(LtrText(List(Reference("data", "detail", "ratingText"))), 8, 4, 8, 4);
+            var trailingCard = Widget("Card", trailing => trailing
+                .Argument("color", HexColor(0xFFE1F5FE))
+                .Argument("child", ratingBadge));
+
+            return Widget("Card", priceCard => priceCard.Argument("child", Widget("ListTile", tile => tile
+                .Argument("title", LtrText(List("Price"), title => title.Argument("style", Map(m => m.Argument("fontWeight", "w600")))))
+                .Argument("subtitle", LtrText(List(Reference("data", "detail", "priceText")), text => text.Argument("style", Map(m => m.Argument("fontSize", 18)))))
+                .Argument("trailing", trailingCard))));
+        }
+
+            var items = List(
+                Item(LtrText(List(Reference("data", "detail", "category")), text => text.Argument("style", Map(m => m
+                    .Argument("fontSize", 14)
+                    .Argument("color", HexColor(0xFF7A7A7A)))))),
+                Item(Padding(
+                    LtrText(List(Reference("data", "detail", "description")), text => text.Argument("style", Map(m => m
+                        .Argument("fontSize", 16)
+                        .Argument("height", 1.4)))),
+                    12,
+                    0,
+                    12,
+                    16)),
+                Item(PriceTile()),
+                Item(Padding(LtrText(List("Highlights"), heading => heading.Argument("style", Map(m => m
+                    .Argument("fontSize", 16)
+                    .Argument("fontWeight", "w600")))), 16, 8, 8, 4)),
+                For(
+                    "highlight",
+                    Reference("data", "detail", "highlights"),
+                    Widget("ListTile", highlight => highlight
+                        .Argument("leading", Widget("Icon", icon => icon
+                            .Argument("codePoint", 0xE86C)
+                            .Argument("fontFamily", "MaterialIcons")
+                            .Argument("color", HexColor(0xFF558B2F))))
+                        .Argument("title", LtrText(List(Reference("highlight")))))),
+                Item(Padding(LtrText(List("Specifications"), heading => heading.Argument("style", Map(m => m
+                    .Argument("fontSize", 16)
+                    .Argument("fontWeight", "w600")))), 16, 16, 8, 4)),
+                For(
+                    "spec",
+                    Reference("data", "detail", "specifications"),
+                    Widget("SpecificationRow", spec => spec.Argument("spec", Reference("spec")))),
+                Item(Padding(Widget("ElevatedButton", button => button
+                    .Argument("onPressed", Event("catalog.buy", args => args
+                        .Argument("id", Reference("data", "detail", "id"))
+                        .Argument("name", Reference("data", "detail", "name"))))
+                    .Argument("child", LtrText(List("Add to Cart")))), 16, 24, 16, 36))
+            );
+
+            return Padding(Widget("ListView", list => list.Argument("children", items)), 20, 12, 20, 12);
+        }
+
+        return Widget("Scaffold", args => args
+            .Argument("appBar", BuildAppBar())
+            .Argument("body", BuildBody()));
+    }
+
+    private static RfwExpression BuildSpecificationRow() =>
+        Widget("ListTile", tile => tile
+            .Argument("title", LtrText(List(Reference("args", "spec", "label")), text => text.Argument("style", Map(m => m.Argument("fontWeight", "w500")))))
+            .Argument("trailing", LtrText(List(Reference("args", "spec", "value")), text => text.Argument("style", Map(m => m.Argument("color", HexColor(0xFF424242)))))));
+
+    private static RfwExpression LtrText(RfwExpression text, Action<RfwArgumentBuilder>? configure = null) =>
+        Widget("Text", args =>
+        {
+            args.Argument("text", text);
+            configure?.Invoke(args);
+            args.Argument("textDirection", "ltr");
+        });
+
+    private static RfwExpression Padding(RfwExpression child, params RfwValue[] edges) =>
+        Widget("Padding", args => args.Padding(edges).Argument("child", child));
 }

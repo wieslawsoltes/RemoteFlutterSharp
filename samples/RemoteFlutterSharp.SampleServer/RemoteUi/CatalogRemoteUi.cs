@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 using RemoteFlutterSharp.Dynamic;
 using RemoteFlutterSharp.Rfw;
+using RemoteFlutterSharp.Rfw.Expressions;
 
 using static RemoteFlutterSharp.Rfw.RfwDsl;
 
@@ -22,96 +24,12 @@ public static class CatalogRemoteUi
 
         builder.DefineWidget(
             "CatalogScreen",
-            Widget(
-                "Scaffold",
-                ("backgroundColor", HexColor(0xFFF5F5F5)),
-                ("appBar", Widget(
-                    "AppBar",
-                    ("title", Widget(
-                        "Text",
-                        ("text", List(Item(String("Remote Catalog")))),
-                        ("textDirection", String("ltr"))
-                    ))
-                )),
-                ("body", Widget(
-                    "Padding",
-                    ("padding", List(
-                        Item(Double(16)),
-                        Item(Double(16)),
-                        Item(Double(16)),
-                        Item(Double(16))
-                    )),
-                    ("child", Widget(
-                        "ListView",
-                        ("children", List(
-                            Item(Widget(
-                                "Padding",
-                                ("padding", List(
-                                    Item(Double(8)),
-                                    Item(Double(4)),
-                                    Item(Double(12)),
-                                    Item(Double(12))
-                                )),
-                                ("child", Widget(
-                                    "Text",
-                                    ("text", List(Item(String("Today")))),
-                                    ("style", Map(
-                                        ("fontSize", Double(20)),
-                                        ("fontWeight", String("w600"))
-                                    )),
-                                    ("textDirection", String("ltr"))
-                                ))
-                            )),
-                            For(
-                                "product",
-                                Reference("data", "catalog", "items"),
-                                Widget(
-                                    "ProductCard",
-                                    ("product", Reference("product"))
-                                )
-                            )
-                        ))
-                    ))
-                ))
-            ),
+            BuildCatalogScreen(),
             "The primary scaffold layout containing the catalog list.");
 
         builder.DefineWidget(
             "ProductCard",
-            Widget(
-                "Card",
-                ("child", Widget(
-                    "ListTile",
-                    ("title", Widget(
-                        "Text",
-                        ("text", List(Item(Reference("args", "product", "name")))),
-                        ("style", Map(("fontSize", Double(18)))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("subtitle", Widget(
-                        "Text",
-                        ("text", List(
-                            Item(String("Rating ")), 
-                            Item(Reference("args", "product", "ratingText")),
-                            Item(String(" • ")), 
-                            Item(Reference("args", "product", "category"))
-                        )),
-                        ("style", Map(("color", HexColor(0xFF666666)))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("trailing", Widget(
-                        "Text",
-                        ("text", List(Item(Reference("args", "product", "priceText")))),
-                        ("style", Map(("fontWeight", String("w600")))),
-                        ("textDirection", String("ltr"))
-                    )),
-                    ("onTap", Event(
-                        "catalog.select",
-                        ("id", Reference("args", "product", "id")),
-                        ("name", Reference("args", "product", "name"))
-                    ))
-                ))
-            ),
+            BuildProductCard(),
             "Reusable tile that emits selection events back to the host.");
 
         return builder.Build();
@@ -163,4 +81,54 @@ public static class CatalogRemoteUi
 
         return content.ToJsonString();
     }
+
+    private static RfwExpression BuildCatalogScreen() =>
+        Widget("Scaffold", args => args
+            .Argument("backgroundColor", HexColor(0xFFF5F5F5))
+            .Argument("appBar", Widget("AppBar", appBar => appBar
+                .Argument("title", LtrText(List("Remote Catalog")))))
+            .Argument("body", Padding(Widget("ListView", list => list
+                .Argument("children", List(
+                    Item(Padding(
+                        LtrText(List("Today"), text => text.Argument("style", Map(m => m
+                            .Argument("fontSize", 20)
+                            .Argument("fontWeight", "w600")))),
+                        8,
+                        4,
+                        12,
+                        12)),
+                    For(
+                        "product",
+                        Reference("data", "catalog", "items"),
+                        Widget("ProductCard", card => card.Argument("product", Reference("product")))
+                    )
+                ))), 16, 16, 16, 16))
+        );
+
+    private static RfwExpression BuildProductCard() =>
+        Widget("Card", card => card.Argument("child", Widget("ListTile", tile => tile
+            .Argument("title", LtrText(List(Reference("args", "product", "name")), text => text.Argument("style", Map(m => m.Argument("fontSize", 18)))))
+            .Argument("subtitle", LtrText(
+                List(
+                    "Rating ",
+                    Reference("args", "product", "ratingText"),
+                    " • ",
+                    Reference("args", "product", "category")),
+                text => text.Argument("style", Map(m => m.Argument("color", HexColor(0xFF666666))))))
+            .Argument("trailing", LtrText(List(Reference("args", "product", "priceText")), text => text.Argument("style", Map(m => m.Argument("fontWeight", "w600")))))
+            .Argument("onTap", Event("catalog.select", args => args
+                .Argument("id", Reference("args", "product", "id"))
+                .Argument("name", Reference("args", "product", "name"))))
+        )));
+
+    private static RfwExpression LtrText(RfwExpression text, Action<RfwArgumentBuilder>? configure = null) =>
+        Widget("Text", args =>
+        {
+            args.Argument("text", text);
+            configure?.Invoke(args);
+            args.Argument("textDirection", "ltr");
+        });
+
+    private static RfwExpression Padding(RfwExpression child, params RfwValue[] edges) =>
+        Widget("Padding", args => args.Padding(edges).Argument("child", child));
 }
