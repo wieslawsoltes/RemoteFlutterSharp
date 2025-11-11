@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\RemoteFlutterSharp\RemoteFlutterSharp.csproj" />
     <ProjectReference Include="..\RemoteFlutterSharp.RemoteUi\RemoteFlutterSharp.RemoteUi.csproj" />
+    <ProjectReference Include="..\RemoteFlutterSharp.RemoteUi.Xaml\RemoteFlutterSharp.RemoteUi.Xaml.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

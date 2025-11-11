@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <XamlXPath Condition="'$(XamlXPath)' == ''">$(MSBuildThisFileDirectory)../../../XamlX</XamlXPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../RemoteFlutterSharp/RemoteFlutterSharp.csproj" />
+    <ProjectReference Include="$(XamlXPath)/src/XamlX/XamlX.csproj" />
+    <ProjectReference Include="$(XamlXPath)/src/XamlX.Parser.GuiLabs/XamlX.Parser.GuiLabs.csproj" />
+  </ItemGroup>
+</Project>

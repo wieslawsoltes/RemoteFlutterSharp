@@ -1,0 +1,694 @@
+<Library xmlns="http://schemas.remotefluttersharp.dev/xaml" Name="catalog">
+  <Import Name="core.widgets" />
+  <Import Name="material" />
+
+  <WidgetDefinition Name="root" Summary="Entry point widget used by the Flutter host application.">
+    <WidgetCall Name="CatalogScreen" />
+  </WidgetDefinition>
+
+  <WidgetDefinition Name="CatalogScreen" Summary="The primary scaffold layout containing the catalog list.">
+    <WidgetCall Name="Scaffold">
+      <Argument Name="backgroundColor">
+        <HexColorLiteral Value="#FFF5F5F5" />
+      </Argument>
+      <Argument Name="appBar">
+        <WidgetCall Name="AppBar">
+          <Argument Name="title">
+            <WidgetCall Name="Text">
+              <Argument Name="text">
+                <List>
+                  <Item>
+                    <StringLiteral Value="Remote Catalog" />
+                  </Item>
+                </List>
+              </Argument>
+              <Argument Name="textDirection">
+                <StringLiteral Value="ltr" />
+              </Argument>
+            </WidgetCall>
+          </Argument>
+        </WidgetCall>
+      </Argument>
+      <Argument Name="body">
+        <WidgetCall Name="Padding">
+          <Argument Name="padding">
+            <List>
+              <Item>
+                <IntLiteral Value="16" />
+              </Item>
+              <Item>
+                <IntLiteral Value="16" />
+              </Item>
+              <Item>
+                <IntLiteral Value="16" />
+              </Item>
+              <Item>
+                <IntLiteral Value="16" />
+              </Item>
+            </List>
+          </Argument>
+          <Argument Name="child">
+            <WidgetCall Name="ListView">
+              <Argument Name="children">
+                <List>
+                  <Item>
+                    <WidgetCall Name="Padding">
+                      <Argument Name="padding">
+                        <List>
+                          <Item>
+                            <IntLiteral Value="8" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="4" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="12" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="12" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="child">
+                        <WidgetCall Name="Text">
+                          <Argument Name="text">
+                            <List>
+                              <Item>
+                                <StringLiteral Value="Today" />
+                              </Item>
+                            </List>
+                          </Argument>
+                          <Argument Name="style">
+                            <Map>
+                              <Argument Name="fontSize">
+                                <IntLiteral Value="20" />
+                              </Argument>
+                              <Argument Name="fontWeight">
+                                <StringLiteral Value="w600" />
+                              </Argument>
+                            </Map>
+                          </Argument>
+                          <Argument Name="textDirection">
+                            <StringLiteral Value="ltr" />
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <For Variable="product">
+                    <For.Iterable>
+                      <Reference Path="data.catalog.items" />
+                    </For.Iterable>
+                    <For.Body>
+                      <WidgetCall Name="ProductCard">
+                        <Argument Name="product">
+                          <Reference Path="product" />
+                        </Argument>
+                      </WidgetCall>
+                    </For.Body>
+                  </For>
+                </List>
+              </Argument>
+            </WidgetCall>
+          </Argument>
+        </WidgetCall>
+      </Argument>
+    </WidgetCall>
+  </WidgetDefinition>
+
+  <WidgetDefinition Name="ProductCard" Summary="Reusable tile that emits selection events back to the host.">
+    <WidgetCall Name="Card">
+      <Argument Name="child">
+        <WidgetCall Name="ListTile">
+          <Argument Name="title">
+            <WidgetCall Name="Text">
+              <Argument Name="text">
+                <List>
+                  <Item>
+                    <Reference Path="args.product.name" />
+                  </Item>
+                </List>
+              </Argument>
+              <Argument Name="style">
+                <Map>
+                  <Argument Name="fontSize">
+                    <IntLiteral Value="18" />
+                  </Argument>
+                </Map>
+              </Argument>
+              <Argument Name="textDirection">
+                <StringLiteral Value="ltr" />
+              </Argument>
+            </WidgetCall>
+          </Argument>
+          <Argument Name="subtitle">
+            <WidgetCall Name="Text">
+              <Argument Name="text">
+                <List>
+                  <Item>
+                    <StringLiteral Value="Rating " />
+                  </Item>
+                  <Item>
+                    <Reference Path="args.product.ratingText" />
+                  </Item>
+                  <Item>
+                    <StringLiteral Value=" • " />
+                  </Item>
+                  <Item>
+                    <Reference Path="args.product.category" />
+                  </Item>
+                </List>
+              </Argument>
+              <Argument Name="style">
+                <Map>
+                  <Argument Name="color">
+                    <HexColorLiteral Value="#FF666666" />
+                  </Argument>
+                </Map>
+              </Argument>
+              <Argument Name="textDirection">
+                <StringLiteral Value="ltr" />
+              </Argument>
+            </WidgetCall>
+          </Argument>
+          <Argument Name="trailing">
+            <WidgetCall Name="Text">
+              <Argument Name="text">
+                <List>
+                  <Item>
+                    <Reference Path="args.product.priceText" />
+                  </Item>
+                </List>
+              </Argument>
+              <Argument Name="style">
+                <Map>
+                  <Argument Name="fontWeight">
+                    <StringLiteral Value="w600" />
+                  </Argument>
+                </Map>
+              </Argument>
+              <Argument Name="textDirection">
+                <StringLiteral Value="ltr" />
+              </Argument>
+            </WidgetCall>
+          </Argument>
+          <Argument Name="onTap">
+            <Event Name="catalog.select">
+              <Argument Name="id">
+                <Reference Path="args.product.id" />
+              </Argument>
+              <Argument Name="name">
+                <Reference Path="args.product.name" />
+              </Argument>
+            </Event>
+          </Argument>
+        </WidgetCall>
+      </Argument>
+    </WidgetCall>
+  </WidgetDefinition>
+
+  <WidgetDefinition Name="ProductDetailScreen" Summary="Detailed product layout with highlights and specifications.">
+    <WidgetCall Name="Scaffold">
+      <Argument Name="appBar">
+        <WidgetCall Name="AppBar">
+          <Argument Name="leading">
+            <WidgetCall Name="GestureDetector">
+              <Argument Name="onTap">
+                <Event Name="catalog.back" />
+              </Argument>
+              <Argument Name="child">
+                <WidgetCall Name="Padding">
+                  <Argument Name="padding">
+                    <List>
+                      <Item>
+                        <IntLiteral Value="8" />
+                      </Item>
+                      <Item>
+                        <IntLiteral Value="8" />
+                      </Item>
+                      <Item>
+                        <IntLiteral Value="8" />
+                      </Item>
+                      <Item>
+                        <IntLiteral Value="8" />
+                      </Item>
+                    </List>
+                  </Argument>
+                  <Argument Name="child">
+                    <WidgetCall Name="Icon">
+                      <Argument Name="codePoint">
+                        <IntLiteral Value="58820" />
+                      </Argument>
+                      <Argument Name="fontFamily">
+                        <StringLiteral Value="MaterialIcons" />
+                      </Argument>
+                    </WidgetCall>
+                  </Argument>
+                </WidgetCall>
+              </Argument>
+            </WidgetCall>
+          </Argument>
+          <Argument Name="title">
+            <WidgetCall Name="Text">
+              <Argument Name="text">
+                <List>
+                  <Item>
+                    <Reference Path="data.detail.name" />
+                  </Item>
+                </List>
+              </Argument>
+              <Argument Name="style">
+                <Map>
+                  <Argument Name="fontSize">
+                    <IntLiteral Value="18" />
+                  </Argument>
+                </Map>
+              </Argument>
+              <Argument Name="textDirection">
+                <StringLiteral Value="ltr" />
+              </Argument>
+            </WidgetCall>
+          </Argument>
+        </WidgetCall>
+      </Argument>
+      <Argument Name="body">
+        <WidgetCall Name="Padding">
+          <Argument Name="padding">
+            <List>
+              <Item>
+                <IntLiteral Value="20" />
+              </Item>
+              <Item>
+                <IntLiteral Value="12" />
+              </Item>
+              <Item>
+                <IntLiteral Value="20" />
+              </Item>
+              <Item>
+                <IntLiteral Value="12" />
+              </Item>
+            </List>
+          </Argument>
+          <Argument Name="child">
+            <WidgetCall Name="ListView">
+              <Argument Name="children">
+                <List>
+                  <Item>
+                    <WidgetCall Name="Text">
+                      <Argument Name="text">
+                        <List>
+                          <Item>
+                            <Reference Path="data.detail.category" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="style">
+                        <Map>
+                          <Argument Name="fontSize">
+                            <IntLiteral Value="14" />
+                          </Argument>
+                          <Argument Name="color">
+                            <HexColorLiteral Value="#FF7A7A7A" />
+                          </Argument>
+                        </Map>
+                      </Argument>
+                      <Argument Name="textDirection">
+                        <StringLiteral Value="ltr" />
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <Item>
+                    <WidgetCall Name="Padding">
+                      <Argument Name="padding">
+                        <List>
+                          <Item>
+                            <IntLiteral Value="12" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="0" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="12" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="child">
+                        <WidgetCall Name="Text">
+                          <Argument Name="text">
+                            <List>
+                              <Item>
+                                <Reference Path="data.detail.description" />
+                              </Item>
+                            </List>
+                          </Argument>
+                          <Argument Name="style">
+                            <Map>
+                              <Argument Name="fontSize">
+                                <IntLiteral Value="16" />
+                              </Argument>
+                              <Argument Name="height">
+                                <DoubleLiteral Value="1.4" />
+                              </Argument>
+                            </Map>
+                          </Argument>
+                          <Argument Name="textDirection">
+                            <StringLiteral Value="ltr" />
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <Item>
+                    <WidgetCall Name="Card">
+                      <Argument Name="child">
+                        <WidgetCall Name="ListTile">
+                          <Argument Name="title">
+                            <WidgetCall Name="Text">
+                              <Argument Name="text">
+                                <List>
+                                  <Item>
+                                    <StringLiteral Value="Price" />
+                                  </Item>
+                                </List>
+                              </Argument>
+                              <Argument Name="style">
+                                <Map>
+                                  <Argument Name="fontWeight">
+                                    <StringLiteral Value="w600" />
+                                  </Argument>
+                                </Map>
+                              </Argument>
+                              <Argument Name="textDirection">
+                                <StringLiteral Value="ltr" />
+                              </Argument>
+                            </WidgetCall>
+                          </Argument>
+                          <Argument Name="subtitle">
+                            <WidgetCall Name="Text">
+                              <Argument Name="text">
+                                <List>
+                                  <Item>
+                                    <Reference Path="data.detail.priceText" />
+                                  </Item>
+                                </List>
+                              </Argument>
+                              <Argument Name="style">
+                                <Map>
+                                  <Argument Name="fontSize">
+                                    <IntLiteral Value="18" />
+                                  </Argument>
+                                </Map>
+                              </Argument>
+                              <Argument Name="textDirection">
+                                <StringLiteral Value="ltr" />
+                              </Argument>
+                            </WidgetCall>
+                          </Argument>
+                          <Argument Name="trailing">
+                            <WidgetCall Name="Card">
+                              <Argument Name="color">
+                                <HexColorLiteral Value="#FFE1F5FE" />
+                              </Argument>
+                              <Argument Name="child">
+                                <WidgetCall Name="Padding">
+                                  <Argument Name="padding">
+                                    <List>
+                                      <Item>
+                                        <IntLiteral Value="8" />
+                                      </Item>
+                                      <Item>
+                                        <IntLiteral Value="4" />
+                                      </Item>
+                                      <Item>
+                                        <IntLiteral Value="8" />
+                                      </Item>
+                                      <Item>
+                                        <IntLiteral Value="4" />
+                                      </Item>
+                                    </List>
+                                  </Argument>
+                                  <Argument Name="child">
+                                    <WidgetCall Name="Text">
+                                      <Argument Name="text">
+                                        <List>
+                                          <Item>
+                                            <Reference Path="data.detail.ratingText" />
+                                          </Item>
+                                        </List>
+                                      </Argument>
+                                      <Argument Name="textDirection">
+                                        <StringLiteral Value="ltr" />
+                                      </Argument>
+                                    </WidgetCall>
+                                  </Argument>
+                                </WidgetCall>
+                              </Argument>
+                            </WidgetCall>
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <Item>
+                    <WidgetCall Name="Padding">
+                      <Argument Name="padding">
+                        <List>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="8" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="8" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="4" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="child">
+                        <WidgetCall Name="Text">
+                          <Argument Name="text">
+                            <List>
+                              <Item>
+                                <StringLiteral Value="Highlights" />
+                              </Item>
+                            </List>
+                          </Argument>
+                          <Argument Name="style">
+                            <Map>
+                              <Argument Name="fontSize">
+                                <IntLiteral Value="16" />
+                              </Argument>
+                              <Argument Name="fontWeight">
+                                <StringLiteral Value="w600" />
+                              </Argument>
+                            </Map>
+                          </Argument>
+                          <Argument Name="textDirection">
+                            <StringLiteral Value="ltr" />
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <For Variable="highlight">
+                    <For.Iterable>
+                      <Reference Path="data.detail.highlights" />
+                    </For.Iterable>
+                    <For.Body>
+                      <WidgetCall Name="ListTile">
+                        <Argument Name="leading">
+                          <WidgetCall Name="Icon">
+                            <Argument Name="codePoint">
+                              <IntLiteral Value="59468" />
+                            </Argument>
+                            <Argument Name="fontFamily">
+                              <StringLiteral Value="MaterialIcons" />
+                            </Argument>
+                            <Argument Name="color">
+                              <HexColorLiteral Value="#FF558B2F" />
+                            </Argument>
+                          </WidgetCall>
+                        </Argument>
+                        <Argument Name="title">
+                          <WidgetCall Name="Text">
+                            <Argument Name="text">
+                              <List>
+                                <Item>
+                                  <Reference Path="highlight" />
+                                </Item>
+                              </List>
+                            </Argument>
+                            <Argument Name="textDirection">
+                              <StringLiteral Value="ltr" />
+                            </Argument>
+                          </WidgetCall>
+                        </Argument>
+                      </WidgetCall>
+                    </For.Body>
+                  </For>
+                  <Item>
+                    <WidgetCall Name="Padding">
+                      <Argument Name="padding">
+                        <List>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="8" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="4" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="child">
+                        <WidgetCall Name="Text">
+                          <Argument Name="text">
+                            <List>
+                              <Item>
+                                <StringLiteral Value="Specifications" />
+                              </Item>
+                            </List>
+                          </Argument>
+                          <Argument Name="style">
+                            <Map>
+                              <Argument Name="fontSize">
+                                <IntLiteral Value="16" />
+                              </Argument>
+                              <Argument Name="fontWeight">
+                                <StringLiteral Value="w600" />
+                              </Argument>
+                            </Map>
+                          </Argument>
+                          <Argument Name="textDirection">
+                            <StringLiteral Value="ltr" />
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                  <For Variable="spec">
+                    <For.Iterable>
+                      <Reference Path="data.detail.specifications" />
+                    </For.Iterable>
+                    <For.Body>
+                      <WidgetCall Name="SpecificationRow">
+                        <Argument Name="spec">
+                          <Reference Path="spec" />
+                        </Argument>
+                      </WidgetCall>
+                    </For.Body>
+                  </For>
+                  <Item>
+                    <WidgetCall Name="Padding">
+                      <Argument Name="padding">
+                        <List>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="24" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="16" />
+                          </Item>
+                          <Item>
+                            <IntLiteral Value="36" />
+                          </Item>
+                        </List>
+                      </Argument>
+                      <Argument Name="child">
+                        <WidgetCall Name="ElevatedButton">
+                          <Argument Name="onPressed">
+                            <Event Name="catalog.buy">
+                              <Argument Name="id">
+                                <Reference Path="data.detail.id" />
+                              </Argument>
+                              <Argument Name="name">
+                                <Reference Path="data.detail.name" />
+                              </Argument>
+                            </Event>
+                          </Argument>
+                          <Argument Name="child">
+                            <WidgetCall Name="Text">
+                              <Argument Name="text">
+                                <List>
+                                  <Item>
+                                    <StringLiteral Value="Add to Cart" />
+                                  </Item>
+                                </List>
+                              </Argument>
+                              <Argument Name="textDirection">
+                                <StringLiteral Value="ltr" />
+                              </Argument>
+                            </WidgetCall>
+                          </Argument>
+                        </WidgetCall>
+                      </Argument>
+                    </WidgetCall>
+                  </Item>
+                </List>
+              </Argument>
+            </WidgetCall>
+          </Argument>
+        </WidgetCall>
+      </Argument>
+    </WidgetCall>
+  </WidgetDefinition>
+
+  <WidgetDefinition Name="SpecificationRow" Summary="Row displaying a specification label/value pair.">
+    <WidgetCall Name="ListTile">
+      <Argument Name="title">
+        <WidgetCall Name="Text">
+          <Argument Name="text">
+            <List>
+              <Item>
+                <Reference Path="args.spec.label" />
+              </Item>
+            </List>
+          </Argument>
+          <Argument Name="style">
+            <Map>
+              <Argument Name="fontWeight">
+                <StringLiteral Value="w500" />
+              </Argument>
+            </Map>
+          </Argument>
+          <Argument Name="textDirection">
+            <StringLiteral Value="ltr" />
+          </Argument>
+        </WidgetCall>
+      </Argument>
+      <Argument Name="trailing">
+        <WidgetCall Name="Text">
+          <Argument Name="text">
+            <List>
+              <Item>
+                <Reference Path="args.spec.value" />
+              </Item>
+            </List>
+          </Argument>
+          <Argument Name="style">
+            <Map>
+              <Argument Name="color">
+                <HexColorLiteral Value="#FF424242" />
+              </Argument>
+            </Map>
+          </Argument>
+          <Argument Name="textDirection">
+            <StringLiteral Value="ltr" />
+          </Argument>
+        </WidgetCall>
+      </Argument>
+    </WidgetCall>
+  </WidgetDefinition>
+</Library>

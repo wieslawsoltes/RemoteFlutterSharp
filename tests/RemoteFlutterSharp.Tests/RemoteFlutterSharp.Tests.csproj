@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RemoteFlutterSharp\RemoteFlutterSharp.csproj" />
+    <ProjectReference Include="..\..\src\RemoteFlutterSharp.Xaml\RemoteFlutterSharp.Xaml.csproj" />
   </ItemGroup>
 
 </Project>

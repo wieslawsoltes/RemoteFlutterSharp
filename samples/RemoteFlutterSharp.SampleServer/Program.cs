@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using RemoteFlutterSharp.RemoteUi;
+using RemoteFlutterSharp.RemoteUi.Xaml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,12 +17,14 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-var library = CatalogRemoteUi.CreateLibrary();
-var libraryText = library.ToText();
-var dataJson = CatalogRemoteUi.CreateDataJson();
+var csharpLibrary = CatalogRemoteUi.CreateLibrary();
+var xamlLibrary = CatalogRemoteUiXaml.CreateLibrary();
 
-builder.Services.AddSingleton(library);
-builder.Services.AddSingleton(new RemoteWidgetDocument(libraryText, dataJson));
+var catalogDocuments = new RemoteWidgetCatalog(
+    new RemoteWidgetDocument(csharpLibrary.ToText(), CatalogRemoteUi.CreateDataJson()),
+    new RemoteWidgetDocument(xamlLibrary.ToText(), CatalogRemoteUiXaml.CreateDataJson()));
+
+builder.Services.AddSingleton(catalogDocuments);
 
 var app = builder.Build();
 
@@ -29,11 +32,17 @@ app.UseCors();
 
 app.MapGet("/", () => Results.Redirect("/api/rfw/library"));
 
-app.MapGet("/api/rfw/library", ([FromServices] RemoteWidgetDocument document) =>
-    Results.Text(document.LibraryText, "text/plain"));
+app.MapGet("/api/rfw/library", (HttpContext context, [FromServices] RemoteWidgetCatalog catalog) =>
+{
+    var document = ResolveDocument(context, catalog);
+    return Results.Text(document.LibraryText, "text/plain");
+});
 
-app.MapGet("/api/rfw/data", ([FromServices] RemoteWidgetDocument document) =>
-    Results.Text(document.DataJson, "application/json"));
+app.MapGet("/api/rfw/data", (HttpContext context, [FromServices] RemoteWidgetCatalog catalog) =>
+{
+    var document = ResolveDocument(context, catalog);
+    return Results.Text(document.DataJson, "application/json");
+});
 
 app.MapGet("/api/rfw/product/{id:int}", ([FromRoute] int id) =>
     CatalogData.TryGetProductDetail(id, out var detail)
@@ -194,6 +203,20 @@ app.MapPost("/api/rfw/event", ([FromBody] RemoteUiEvent payload, ILogger<Program
 
 app.Run();
 
+static RemoteWidgetDocument ResolveDocument(HttpContext context, RemoteWidgetCatalog catalog)
+{
+    var variant = context.Request.Query["variant"].ToString();
+
+    if (string.Equals(variant, "csharp", StringComparison.OrdinalIgnoreCase))
+    {
+        return catalog.CSharp;
+    }
+
+    return catalog.Xaml;
+}
+
 public sealed record RemoteWidgetDocument(string LibraryText, string DataJson);
+
+public sealed record RemoteWidgetCatalog(RemoteWidgetDocument CSharp, RemoteWidgetDocument Xaml);
 
 public sealed record RemoteUiEvent(string Name, Dictionary<string, JsonElement> Arguments);

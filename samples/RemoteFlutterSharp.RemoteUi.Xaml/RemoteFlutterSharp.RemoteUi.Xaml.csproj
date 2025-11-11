@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CatalogRemoteUi.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../RemoteFlutterSharp.RemoteUi/RemoteFlutterSharp.RemoteUi.csproj" />
+    <ProjectReference Include="../../src/RemoteFlutterSharp.Xaml/RemoteFlutterSharp.Xaml.csproj" />
+  </ItemGroup>
+</Project>

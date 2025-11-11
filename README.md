@@ -15,6 +15,7 @@ RemoteFlutterSharp is a full-stack proof-of-concept that demonstrates how modern
 | Feature | What it delivers | Key technologies |
 | --- | --- | --- |
 | Fluent RFW DSL | Declare widget trees, event wiring, and iterables with expressive C# helpers (`Widget`, `List`, `For`, `Event`). | .NET 8, `RemoteFlutterSharp.Rfw` |
+| XAML authoring support | Build the same remote widget libraries from declarative XAML parsed via XamlX at runtime. | `RemoteFlutterSharp.Xaml`, XamlX |
 | Dynamic content builder | Produce RFW-compliant JSON payloads and emit strongly typed catalog data (including cart payloads, highlights, and specifications). | `DynamicContentBuilder`, System.Text.Json |
 | Sample catalog server | Hosts `/api/rfw/library`, `/api/rfw/data`, `/api/rfw/product/{id}`, `/api/rfw/event`, and the enriched cart payloads so the Flutter host can navigate and react to events. | ASP.NET Core minimal APIs |
 | Flutter host application | Fetches remote bundles, handles catalog and cart navigation, animates transitions, and surfaces event feedback for macOS (and other supported platforms). | Flutter 3.24+, `package:rfw`, `http`, `AnimatedSwitcher` |
@@ -130,6 +131,7 @@ Artifacts are emitted under the respective `bin/Debug` or Flutter `build/` direc
 ## Customising the Remote UI
 
 - Update `samples/RemoteFlutterSharp.RemoteUi/CatalogRemoteUi.cs` to compose new widget trees, events, or navigation flows.
+- Author remote layouts in XAML under `samples/RemoteFlutterSharp.RemoteUi.Xaml/`; this variant now serves by default, while `/api/rfw/library?variant=csharp` returns the original DSL version.
 - Extend `CatalogData.cs` with additional catalog items, localized strings, or richer metadata.
 - Regenerate exported artifacts via the CLI tool for integration into other environments.
 
