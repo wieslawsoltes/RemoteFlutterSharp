@@ -3,7 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <XamlXPath Condition="'$(XamlXPath)' == ''">$(MSBuildThisFileDirectory)../../../XamlX</XamlXPath>
+    <XamlXPath Condition="'$(XamlXPath)' == ''">$(MSBuildThisFileDirectory)../../external/XamlX</XamlXPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../RemoteFlutterSharp/RemoteFlutterSharp.csproj" />
