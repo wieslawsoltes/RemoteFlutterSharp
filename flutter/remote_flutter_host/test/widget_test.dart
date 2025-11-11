@@ -7,24 +7,53 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 import 'package:remote_flutter_host/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  const libraryText = '''
+import core.widgets;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+widget root = Text(
+  text: [
+    "Remote host ready",
+  ],
+  textDirection: "ltr",
+);
+''';
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  const dataJson = '{"catalog": {}}';
+
+  testWidgets('Remote catalog screen renders fetched library',
+      (WidgetTester tester) async {
+    final mockClient = MockClient((request) async {
+      if (request.url.path.endsWith('/library')) {
+        return http.Response(libraryText, 200);
+      }
+      if (request.url.path.endsWith('/data')) {
+        return http.Response(dataJson, 200,
+            headers: {'content-type': 'application/json'});
+      }
+
+      return http.Response('Not found', 404);
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: RemoteCatalogScreen(
+        serverBaseUrl: 'http://localhost',
+        clientFactory: () => mockClient,
+      ),
+    ));
+
+    await tester.pump(); // start initial frame
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remote host ready'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
   });
 }

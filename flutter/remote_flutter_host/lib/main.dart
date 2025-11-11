@@ -32,7 +32,14 @@ class RemoteFlutterHostApp extends StatelessWidget {
 }
 
 class RemoteCatalogScreen extends StatefulWidget {
-  const RemoteCatalogScreen({super.key});
+  const RemoteCatalogScreen({
+    super.key,
+    this.serverBaseUrl = _serverBaseUrl,
+    this.clientFactory = http.Client.new,
+  });
+
+  final String serverBaseUrl;
+  final http.Client Function() clientFactory;
 
   @override
   State<RemoteCatalogScreen> createState() => _RemoteCatalogScreenState();
@@ -54,6 +61,7 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
 
   final Runtime _runtime = Runtime();
   final DynamicContent _content = DynamicContent();
+  late final http.Client _client;
 
   FullyQualifiedWidgetName? _rootWidget;
   bool _loading = true;
@@ -62,9 +70,16 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
   @override
   void initState() {
     super.initState();
+    _client = widget.clientFactory();
     _runtime.update(_coreWidgets, createCoreWidgets());
     _runtime.update(_materialWidgets, createMaterialWidgets());
     unawaited(_refreshRemoteUi());
+  }
+
+  @override
+  void dispose() {
+    _client.close();
+    super.dispose();
   }
 
   Future<void> _refreshRemoteUi() async {
@@ -74,12 +89,13 @@ class _RemoteCatalogScreenState extends State<RemoteCatalogScreen> {
     });
 
     try {
-      final libraryUri = Uri.parse('$_serverBaseUrl/api/rfw/library');
-      final dataUri = Uri.parse('$_serverBaseUrl/api/rfw/data');
+      final baseUri = Uri.parse(widget.serverBaseUrl);
+      final libraryUri = baseUri.resolve('/api/rfw/library');
+      final dataUri = baseUri.resolve('/api/rfw/data');
 
       final responses = await Future.wait<http.Response>([
-        http.get(libraryUri),
-        http.get(dataUri),
+        _client.get(libraryUri),
+        _client.get(dataUri),
       ]).timeout(const Duration(seconds: 5));
 
       final libraryResponse = responses[0];
