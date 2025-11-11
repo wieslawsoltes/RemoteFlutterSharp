@@ -52,7 +52,7 @@ jobs:
         run: flutter test
         working-directory: flutter/remote_flutter_host
       - name: Build Flutter macOS app
-        run: flutter build macos --release
+        run: flutter build macos --release --no-tree-shake-icons
         working-directory: flutter/remote_flutter_host
 
   package-artifacts:
